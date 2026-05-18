@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PE Deals in NYC Restaurants</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Georgia, serif; background: #fff; color: #1a1a1a; }
+  .chart-container {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 32px 20px 24px;
+  }
+  .chart-hed {
+    font-size: 1.15rem;
+    font-weight: bold;
+    line-height: 1.3;
+    margin-bottom: 6px;
+  }
+  .chart-dek {
+    font-size: 0.85rem;
+    color: #555;
+    margin-bottom: 24px;
+    line-height: 1.5;
+  }
+  .bar-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 14px;
+    gap: 10px;
+  }
+  .bar-label {
+    font-size: 0.78rem;
+    width: 180px;
+    flex-shrink: 0;
+    line-height: 1.3;
+    color: #222;
+  }
+  .bar-label .group { font-weight: bold; }
+  .bar-label .investor { color: #666; font-size: 0.72rem; }
+  .bar-wrap { flex: 1; position: relative; }
+  .bar {
+    height: 28px;
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    padding-left: 8px;
+    transition: opacity 0.2s;
+  }
+  .bar:hover { opacity: 0.85; }
+  .bar-val {
+    font-size: 0.78rem;
+    font-weight: bold;
+    color: #fff;
+    white-space: nowrap;
+  }
+  .bar-val.outside {
+    color: #555;
+    padding-left: 6px;
+    font-weight: normal;
+  }
+  .bar.undisclosed {
+    background: #d0d0d0;
+    border: 1px dashed #aaa;
+  }
+  .bar.undisclosed .bar-val { color: #888; }
+  .year-marker {
+    font-size: 0.72rem;
+    font-weight: bold;
+    color: #999;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-top: 20px;
+    margin-bottom: 8px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid #eee;
+  }
+  .year-marker:first-child { margin-top: 0; }
+  .legend {
+    display: flex;
+    gap: 20px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.75rem;
+    color: #555;
+  }
+  .legend-swatch {
+    width: 14px;
+    height: 14px;
+    border-radius: 2px;
+  }
+  .legend-swatch.undisclosed {
+    background: #d0d0d0;
+    border: 1px dashed #aaa;
+  }
+  .source {
+    font-size: 0.72rem;
+    color: #999;
+    margin-top: 16px;
+  }
+</style>
+</head>
+<body>
+<div class="chart-container">
+  <div class="chart-hed">PE firms poured more than $1.2 billion into NYC restaurants between 2018 and 2023</div>
+  <div class="chart-dek">Eight confirmed private equity deals reshaped the city's dining landscape. Most deal amounts were never made public.</div>
+  <div id="chart"></div>
+  <div class="legend">
+    <div class="legend-item">
+      <div class="legend-swatch" style="background:#2563a8;"></div>
+      Disclosed deal value
+    </div>
+    <div class="legend-item">
+      <div class="legend-swatch undisclosed"></div>
+      Amount not disclosed
+    </div>
+  </div>
+  <div class="source">Sources: PE firm press releases, Nation's Restaurant News, PR Newswire. Analysis by Lillian Syme.</div>
+</div>
+
+<script>
+const deals = [
+  { year: 2018, group: "Rosa Mexicano",                     investor: "TriSpan",             amount: null,  label: "Undisclosed" },
+  { year: 2020, group: "Chopt / Dos Toros",                 investor: "L Catterton",          amount: null,  label: "Undisclosed" },
+  { year: 2020, group: "Sant Ambroeus",                     investor: "Three Hills Capital",  amount: 35,    label: "$35M" },
+  { year: 2020, group: "Naya",                              investor: "TriSpan",              amount: null,  label: "Undisclosed" },
+  { year: 2020, group: "Maman",                             investor: "TriSpan",              amount: null,  label: "Undisclosed" },
+  { year: 2021, group: "Tacombi",                           investor: "EHI (Danny Meyer)",    amount: 27.5,  label: "$27.5M" },
+  { year: 2023, group: "Tao Group",                         investor: "Mohari Hospitality",   amount: 550,   label: "$550M" },
+  { year: 2023, group: "Joe & the Juice",                   investor: "General Atlantic",     amount: 641,   label: "$641M" },
+];
+
+const MAX_AMOUNT = 641;
+const MAX_BAR_PCT = 95; // % of bar-wrap width
+const COLOR = "#2563a8";
+
+const chart = document.getElementById("chart");
+let lastYear = null;
+
+deals.forEach(d => {
+  if (d.year !== lastYear) {
+    const ym = document.createElement("div");
+    ym.className = "year-marker";
+    ym.textContent = d.year;
+    chart.appendChild(ym);
+    lastYear = d.year;
+  }
+
+  const row = document.createElement("div");
+  row.className = "bar-row";
+
+  const lbl = document.createElement("div");
+  lbl.className = "bar-label";
+  lbl.innerHTML = `<div class="group">${d.group}</div><div class="investor">${d.investor}</div>`;
+
+  const wrap = document.createElement("div");
+  wrap.className = "bar-wrap";
+
+  const bar = document.createElement("div");
+  bar.className = "bar" + (d.amount === null ? " undisclosed" : "");
+
+  if (d.amount !== null) {
+    const pct = (d.amount / MAX_AMOUNT) * MAX_BAR_PCT;
+    bar.style.width = pct + "%";
+    bar.style.background = COLOR;
+    const val = document.createElement("span");
+    val.className = "bar-val";
+    val.textContent = d.label;
+    bar.appendChild(val);
+  } else {
+    bar.style.width = "30%";
+    const val = document.createElement("span");
+    val.className = "bar-val";
+    val.textContent = d.label;
+    bar.appendChild(val);
+  }
+
+  wrap.appendChild(bar);
+  row.appendChild(lbl);
+  row.appendChild(wrap);
+  chart.appendChild(row);
+});
+</script>
+</body>
+</html>

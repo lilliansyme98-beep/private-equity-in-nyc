@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Hidden Investors Behind NYC's 'Independent' Restaurants</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Georgia, serif;
+    background: #fff;
+    color: #1a1a1a;
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 40px 20px 60px;
+    line-height: 1.7;
+  }
+  .kicker {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 0.75rem;
+    font-weight: bold;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #c0392b;
+    margin-bottom: 12px;
+  }
+  h1 {
+    font-size: 2rem;
+    line-height: 1.2;
+    font-weight: bold;
+    margin-bottom: 12px;
+  }
+  .deck {
+    font-size: 1.05rem;
+    color: #444;
+    margin-bottom: 20px;
+    line-height: 1.5;
+  }
+  .byline {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 0.8rem;
+    color: #888;
+    border-top: 2px solid #1a1a1a;
+    border-bottom: 1px solid #ddd;
+    padding: 10px 0;
+    margin-bottom: 28px;
+  }
+  .byline strong { color: #1a1a1a; }
+  p { margin-bottom: 18px; font-size: 1rem; }
+  .photo-block { margin: 32px 0; }
+  .photo-caption {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 0.75rem;
+    color: #777;
+    margin-top: 6px;
+    line-height: 1.4;
+  }
+  .photo-placeholder {
+    width: 100%;
+    height: 300px;
+    background: #f2f2f2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #bbb;
+    font-family: Arial, sans-serif;
+    font-size: 0.85rem;
+    border: 1px dashed #ccc;
+  }
+  .graphic-block { margin: 36px 0; }
+  .graphic-hed {
+    font-size: 1.05rem;
+    font-weight: bold;
+    line-height: 1.3;
+    margin-bottom: 5px;
+  }
+  .graphic-dek {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 0.8rem;
+    color: #666;
+    margin-bottom: 16px;
+    line-height: 1.4;
+  }
+  /* Bar chart */
+  .bar-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
+    gap: 10px;
+  }
+  .bar-label {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 0.75rem;
+    width: 165px;
+    flex-shrink: 0;
+    line-height: 1.3;
+  }
+  .bar-label .grp { font-weight: bold; color: #1a1a1a; }
+  .bar-label .inv { color: #999; font-size: 0.68rem; }
+  .bar-wrap { flex: 1; }
+  .bar {
+    height: 26px;
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    padding-left: 8px;
+    min-width: 4px;
+  }
+  .bar-val { font-family: Arial, sans-serif; font-size: 0.75rem; font-weight: bold; color: #fff; }
+  .bar.undisclosed {
+    background: #e8e8e8;
+    border: 1px dashed #ccc;
+  }
+  .bar.undisclosed .bar-val { color: #aaa; font-weight: normal; }
+  .year-label {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 0.68rem;
+    font-weight: bold;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #ccc;
+    margin-top: 18px;
+    margin-bottom: 8px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid #f2f2f2;
+  }
+  .year-label:first-child { margin-top: 0; }
+  .chart-legend {
+    display: flex;
+    gap: 18px;
+    margin-top: 14px;
+    flex-wrap: wrap;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: Arial, sans-serif;
+    font-size: 0.72rem;
+    color: #777;
+  }
+  .legend-swatch {
+    width: 12px;
+    height: 12px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+  .legend-swatch.undisclosed { background: #e8e8e8; border: 1px dashed #ccc; }
+  /* Map */
+  #map { height: 460px; border: 1px solid #ddd; border-radius: 3px; }
+  .map-legend {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    padding: 10px 14px;
+    font-family: Arial, sans-serif;
+    font-size: 0.72rem;
+    line-height: 1.9;
+  }
+  .map-legend-dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 5px;
+    vertical-align: middle;
+  }
+  blockquote {
+    border-left: 3px solid #ddd;
+    padding-left: 18px;
+    margin: 24px 0;
+    color: #444;
+    font-style: italic;
+  }
+  h2.section-hed {
+    font-size: 1.2rem;
+    margin-top: 36px;
+    margin-bottom: 12px;
+  }
+  .methodology {
+    background: #f8f8f8;
+    border-left: 3px solid #ddd;
+    padding: 20px 24px;
+    margin-top: 40px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 0.8rem;
+    color: #555;
+    line-height: 1.6;
+  }
+  .methodology h2 {
+    font-size: 0.85rem;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .methodology p { font-size: 0.8rem; margin-bottom: 10px; font-family: Arial, sans-serif; }
+  .methodology a { color: #2563a8; }
+  .source-note {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 0.7rem;
+    color: #bbb;
+    margin-top: 10px;
+  }
+</style>
+</head>
+<body>
+
+<div class="kicker">Private Equity / NYC Restaurants</div>
+<h1>The Hidden Investors Behind NYC's 'Independent' Restaurants</h1>
+<div class="deck">A wave of private equity money reshaped the city's dining scene starting in 2020. The brands it created look and feel local. The investors behind them are largely invisible.</div>
+<div class="byline"><strong>By Lillian Syme</strong> &nbsp;|&nbsp; May 2026</div>
+
+<div class="photo-block">
+  <div class="photo-placeholder">[Photo: replace with illustrative photo]</div>
+  <div class="photo-caption">Caption here. Credit: Photographer Name</div>
+</div>
+
+<p>[LEDE: Open with scene -- broker, street-level observation, or a specific restaurant.]</p>
+
+<p>[NUT GRAF: A wave of PE investment reshaped NYC restaurants starting in 2020. The brands that came out of it look and feel like independent neighborhood spots. The investors behind them are largely invisible.]</p>
+
+<p>[BODY: Context on how PE moved into restaurants during COVID. The 2020 deal spike: five of the eight confirmed deals happened that year, as distressed pandemic-era valuations made acquisitions cheap.]</p>
+
+<div class="graphic-block">
+  <div class="graphic-hed">PE firms poured more than $1.2 billion into NYC restaurants between 2018 and 2023</div>
+  <div class="graphic-dek">Confirmed private equity deals involving NYC restaurant groups. Most deal amounts were not publicly disclosed.</div>
+  <div id="bar-chart"></div>
+  <div class="chart-legend">
+    <div class="legend-item"><div class="legend-swatch" style="background:#2563a8;"></div>Disclosed amount</div>
+    <div class="legend-item"><div class="legend-swatch undisclosed"></div>Amount not disclosed</div>
+  </div>
+  <div class="source-note">Sources: PE firm press releases, Nation's Restaurant News, PR Newswire.</div>
+</div>
+
+<p>[BODY: What these restaurants look like from the street. Maman, Tacombi, Sant Ambroeus. Quote from broker on how customers can't tell.]</p>
+
+<blockquote>"[KEY QUOTE from broker or source.]"</blockquote>
+
+<p>[BODY: LLC structure. How ownership is obscured. SLA crossref: REALTEK LLC = Sant Ambroeus West Village. 47.3% of PE-backed establishments hold their liquor licenses through LLCs with no visible connection to the parent firm.]</p>
+
+<h2 class="section-hed">Mapped across the city</h2>
+<p>[TRANSITION: The DOH data shows 202 confirmed PE-backed locations across all five boroughs.]</p>
+
+<div class="graphic-block">
+  <div class="graphic-hed">202 PE-backed restaurant locations span all five boroughs</div>
+  <div class="graphic-dek">Each dot is a food establishment tied to a confirmed private equity investment. Color indicates the investor. Click a dot for details.</div>
+  <div id="map"></div>
+  <div class="source-note" style="margin-top:8px;">Source: NYC Dept. of Health restaurant inspection data (May 2026). Addresses geocoded via U.S. Census Geocoder. Analysis by Lillian Syme.</div>
+</div>
+
+<p>[BODY: Geographic patterns. Manhattan concentration. Airport outposts (Dos Toros at LaGuardia and JFK). Hudson Yards as a PE cluster.]</p>
+
+<p>[BODY: Official source / expert response. Rigie or Jade Kraft.]</p>
+
+<p>[CLOSING: What this means for diners, workers, independent operators. Broker quote on competition with PE-backed chains.]</p>
+
+<div class="methodology">
+  <h2>Methodology</h2>
+  <p>To identify PE-backed restaurants in New York City, this story cross-referenced confirmed private equity deals from PE firm portfolio pages, press releases, and trade press (Nation's Restaurant News, Restaurant Business) against the NYC Department of Health restaurant inspection database (downloaded May 10, 2026), which covers all food establishments in the five boroughs regardless of alcohol service.</p>
+  <p>Deals were verified through primary sources including PE firm announcements and press releases filed with PR Newswire and Business Wire. Deal amounts are listed where publicly disclosed; the majority of transactions were not disclosed publicly. A restaurant group was included only when a PE deal could be confirmed through at least one primary source.</p>
+  <p>Four false positives were removed from the DOH crossref: Russian restaurants whose names include the suffix "-naya" that matched the search term for Naya Group.</p>
+  <p>The NYC Liquor Authority active license database (April 14, 2026) was used as a secondary source to illustrate LLC ownership opacity and was not used as the primary methodology, as it covers only establishments with active liquor licenses.</p>
+  <p>Addresses for the map were geocoded using the U.S. Census Bureau Geocoder batch API. Eight addresses (primarily airport terminal and incomplete locations) could not be geocoded and were excluded from the map.</p>
+  <p><a href="https://github.com/lilliansyme98-beep/private-equity-story">View the data and analysis on GitHub.</a></p>
+</div>
+
+<script>
+// ── Bar chart data ────────────────────────────────────────────────────────────
+const deals = [
+  { year: 2018, group: "Rosa Mexicano",          investor: "TriSpan",             amount: null,  label: "Undisclosed" },
+  { year: 2020, group: "Chopt / Dos Toros",      investor: "L Catterton",          amount: null,  label: "Undisclosed" },
+  { year: 2020, group: "Sant Ambroeus",           investor: "Three Hills Capital",  amount: 35,    label: "$35M" },
+  { year: 2020, group: "Naya",                   investor: "TriSpan",              amount: null,  label: "Undisclosed" },
+  { year: 2020, group: "Maman",                  investor: "TriSpan",              amount: null,  label: "Undisclosed" },
+  { year: 2021, group: "Tacombi",                investor: "EHI / Danny Meyer",    amount: 27.5,  label: "$27.5M" },
+  { year: 2023, group: "Tao Group",              investor: "Mohari Hospitality",   amount: 550,   label: "$550M" },
+  { year: 2023, group: "Joe & the Juice",        investor: "General Atlantic",     amount: 641,   label: "$641M" },
+];
+const MAX = 641;
+const COLOR = "#2563a8";
+const chart = document.getElementById("bar-chart");
+let lastYear = null;
+deals.forEach(d => {
+  if (d.year !== lastYear) {
+    const ym = document.createElement("div");
+    ym.className = "year-label";
+    ym.textContent = d.year;
+    chart.appendChild(ym);
+    lastYear = d.year;
+  }
+  const row = document.createElement("div");
+  row.className = "bar-row";
+  const lbl = document.createElement("div");
+  lbl.className = "bar-label";
+  lbl.innerHTML = `<div class="grp">${d.group}</div><div class="inv">${d.investor}</div>`;
+  const wrap = document.createElement("div");
+  wrap.className = "bar-wrap";
+  const bar = document.createElement("div");
+  bar.className = "bar" + (d.amount === null ? " undisclosed" : "");
+  const pct = d.amount !== null ? (d.amount / MAX) * 94 : 26;
+  bar.style.width = pct + "%";
+  if (d.amount !== null) bar.style.background = COLOR;
+  const val = document.createElement("span");
+  val.className = "bar-val";
+  val.textContent = d.label;
+  bar.appendChild(val);
+  wrap.appendChild(bar);
+  row.appendChild(lbl);
+  row.appendChild(wrap);
+  chart.appendChild(row);
+});
+
+// ── Map ───────────────────────────────────────────────────────────────────────
+const COLORS = {
+  "General Atlantic":            "#2563a8",
+  "TriSpan":                     "#c0392b",
+  "EHI":                         "#16a085",
+  "L Catterton":                 "#8e44ad",
+  "RSE Ventures":                "#d35400",
+  "Three Hills Capital Partners":"#27ae60",
+  "Mohari":                      "#2c3e50",
+  "Mohari Hospitality":          "#2c3e50",
+};
+
+const map = L.map('map').setView([40.73, -73.97], 12);
+L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+  attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
+  subdomains: 'abcd',
+  maxZoom: 19
+}).addTo(map);
+
+const mapLegend = L.control({ position: 'bottomright' });
+mapLegend.onAdd = function() {
+  const div = L.DomUtil.create('div', 'map-legend');
+  const entries = [
+    ["General Atlantic", "#2563a8"],
+    ["TriSpan", "#c0392b"],
+    ["EHI / Danny Meyer", "#16a085"],
+    ["L Catterton", "#8e44ad"],
+    ["RSE Ventures", "#d35400"],
+    ["Three Hills Capital", "#27ae60"],
+    ["Mohari Hospitality", "#2c3e50"],
+  ];
+  div.innerHTML = entries.map(([name, color]) =>
+    `<div><span class="map-legend-dot" style="background:${color}"></span>${name}</div>`
+  ).join('');
+  return div;
+};
+mapLegend.addTo(map);
+
+// Embedded location data (geocoded via U.S. Census Geocoder)
+const LOCATIONS = [{"name": "FELICE", "restaurant_group": "Sant Ambroeus / Felice / Casa Lever", "investor": "Three Hills Capital Partners", "deal_context": "$35M (Three Hills Capital, Sep 2020)", "address": "240 COLUMBUS AVENUE, Manhattan, NY 10023", "borough": "Manhattan", "lat": 40.7769663, "lon": -73.9793341}, {"name": "SANT AMBROEUS GELATERIA", "restaurant_group": "Sant Ambroeus / Felice / Casa Lever", "investor": "Three Hills Capital Partners", "deal_context": "$35M (Three Hills Capital, Sep 2020)", "address": "267 LAFAYETTE STREET, Manhattan, NY 10012", "borough": "Manhattan", "lat": 40.7234424, "lon": -73.9964704}, {"name": "FELICE 56", "restaurant_group": "Sant Ambroeus / Felice / Casa Lever", "investor": "Three Hills Capital Partners", "deal_context": "$35M (Three Hills Capital, Sep 2020)", "address": "15 WEST   56 STREET, Manhattan, NY 10019", "borough": "Manhattan", "lat": 40.7629314, "lon": -73.9753351}, {"name": "SANT AMBROEUS", "restaurant_group": "Sant Ambroeus / Felice / Casa Lever", "investor": "Three Hills Capital Partners", "deal_context": "$35M (Three Hills Capital, Sep 2020)", "address": "200 VESEY STREET, Manhattan, NY 10281", "borough": "Manhattan", "lat": 40.7136414, "lon": -74.0148204}, {"name": "FELICE", "restaurant_group": "Sant Ambroeus / Felice / Casa Lever", "investor": "Three Hills Capital Partners", "deal_context": "$35M (Three Hills Capital, Sep 2020)", "address": "15 GOLD STREET, Manhattan, NY 10038", "borough": "Manhattan", "lat": 40.7078032, "lon": -74.0069387}, {"name": "SANT AMBROEUS COFFEE BAR", "restaurant_group": "Sant Ambroeus / Felice / Casa Lever", "investor": "Three Hills Capital Partners", "deal_context": "$35M (Three Hills Capital, Sep 2020)", "address": "1136 3 AVENUE, Manhattan, NY 10065", "borough": "Manhattan", "lat": 40.7708667, "lon": -73.9681985}, {"name": "FELICE 64", "restaurant_group": "Sant Ambroeus / Felice / Casa Lever", "investor": "Three Hills Capital Partners", "deal_context": "$35M (Three Hills Capital, Sep 2020)", "address": "1166 1 AVENUE, Manhattan, NY 10065", "borough": "Manhattan", "lat": 40.7680652, "lon": -73.9558083}, {"name": "FELICE PASTA BAR", "restaurant_group": "Sant Ambroeus / Felice / Casa Lever", "investor": "Three Hills Capital Partners", "deal_context": "$35M (Three Hills Capital, Sep 2020)", "address": "55 WATER STREET, Brooklyn, NY 11201", "borough": "Brooklyn", "lat": 40.7035408, "lon": -73.9919894}, {"name": "SANT AMBROEUS", "restaurant_group": "Sant Ambroeus / Felice / Casa Lever", "investor": "Three Hills Capital Partners", "deal_context": "$35M (Three Hills Capital, Sep 2020)", "address": "259 WEST    4 STREET, Manhattan, NY 10014", "borough": "Manhattan", "lat": 40.7335002, "lon": -74.0026892}, {"name": "SANT AMBROEUS", "restaurant_group": "Sant Ambroeus / Felice / Casa Lever", "investor": "Three Hills Capital Partners", "deal_context": "$35M (Three Hills Capital, Sep 2020)", "address": "1000 MADISON AVENUE, Manhattan, NY 10075", "borough": "Manhattan", "lat": 40.7754653, "lon": -73.963085}, {"name": "CASA LEVER", "restaurant_group": "Sant Ambroeus / Felice / Casa Lever", "investor": "Three Hills Capital Partners", "deal_context": "$35M (Three Hills Capital, Sep 2020)", "address": "390 PARK AVENUE, Manhattan, NY 10022", "borough": "Manhattan", "lat": 40.7595773, "lon": -73.972688}, {"name": "FELICE 83", "restaurant_group": "Sant Ambroeus / Felice / Casa Lever", "investor": "Three Hills Capital Partners", "deal_context": "$35M (Three Hills Capital, Sep 2020)", "address": "1593 1 AVENUE, Manhattan, NY 10028", "borough": "Manhattan", "lat": 40.7706328, "lon": -73.9539306}, {"name": "THE REGENCY BAR & GRILL / SANT AMBROEUS", "restaurant_group": "Sant Ambroeus / Felice / Casa Lever", "investor": "Three Hills Capital Partners", "deal_context": "$35M (Three Hills Capital, Sep 2020)", "address": "540 PARK AVENUE, Manhattan, NY 10065", "borough": "Manhattan", "lat": 40.7644083, "lon": -73.9690397}, {"name": "FELICE", "restaurant_group": "Sant Ambroeus / Felice / Casa Lever", "investor": "Three Hills Capital Partners", "deal_context": "$35M (Three Hills Capital, Sep 2020)", "address": "84 MONTAGUE STREET, Brooklyn, NY 11201", "borough": "Brooklyn", "lat": 40.6951317, "lon": -73.9960575}, {"name": "FELICE ON HUDSON", "restaurant_group": "Sant Ambroeus / Felice / Casa Lever", "investor": "Three Hills Capital Partners", "deal_context": "$35M (Three Hills Capital, Sep 2020)", "address": "615 HUDSON STREET, Manhattan, NY 10014", "borough": "Manhattan", "lat": 40.7378223, "lon": -74.005822}, {"name": "SANT AMBROEUS", "restaurant_group": "Sant Ambroeus / Felice / Casa Lever", "investor": "Three Hills Capital Partners", "deal_context": "$35M (Three Hills Capital, Sep 2020)", "address": "265 LAFAYETTE STREET, Manhattan, NY 10012", "borough": "Manhattan", "lat": 40.7232511, "lon": -73.9965614}, {"name": "FELICE FIFTH AVE, LLC", "restaurant_group": "Sant Ambroeus / Felice / Casa Lever", "investor": "Three Hills Capital Partners", "deal_context": "$35M (Three Hills Capital, Sep 2020)", "address": "220 5 AVENUE, Manhattan, NY 10001", "borough": "Manhattan", "lat": 40.744502, "lon": -73.9916393}, {"name": "PETITE MAMAN", "restaurant_group": "Maman", "investor": "TriSpan", "deal_context": "Undisclosed (TriSpan, Dec 2020)", "address": "441 8 AVENUE, Manhattan, NY 10001", "borough": "Manhattan", "lat": 40.7441126, "lon": -73.9919242}, {"name": "MAMAN", "restaurant_group": "Maman", "investor": "TriSpan", "deal_context": "Undisclosed (TriSpan, Dec 2020)", "address": "1424 3 AVENUE, Manhattan, NY 10028", "borough": "Manhattan", "lat": 40.7811917, "lon": -73.9606611}, {"name": "MAMAN", "restaurant_group": "Maman", "investor": "TriSpan", "deal_context": "Undisclosed (TriSpan, Dec 2020)", "address": "152 COLUMBUS AVENUE, Manhattan, NY 10023", "borough": "Manhattan", "lat": 40.7740598, "lon": -73.9815827}, {"name": "MAMAN", "restaurant_group": "Maman", "investor": "TriSpan", "deal_context": "Undisclosed (TriSpan, Dec 2020)", "address": "114 WEST   41 STREET, Manhattan, NY 10036", "borough": "Manhattan", "lat": 40.7544782, "lon": -73.9855838}, {"name": "MAMAN", "restaurant_group": "Maman", "investor": "TriSpan", "deal_context": "Undisclosed (TriSpan, Dec 2020)", "address": "667 LEXINGTON AVENUE, Manhattan, NY 10022", "borough": "Manhattan", "lat": 40.7599011, "lon": -73.9696793}, {"name": "PETITE MAMAN", "restaurant_group": "Maman", "investor": "TriSpan", "deal_context": "Undisclosed (TriSpan, Dec 2020)", "address": "601 LEXINGTON AVENUE, Manhattan, NY 10022", "borough": "Manhattan", "lat": 40.7583358, "lon": -73.9699153}, {"name": "MAMAN", "restaurant_group": "Maman", "investor": "TriSpan", "deal_context": "Undisclosed (TriSpan, Dec 2020)", "address": "205 HUDSON STREET, Manhattan, NY 10013", "borough": "Manhattan", "lat": 40.7234842, "lon": -74.0081522}, {"name": "MAMAN", "restaurant_group": "Maman", "investor": "TriSpan", "deal_context": "Undisclosed (TriSpan, Dec 2020)", "address": "47-16 AUSTELL PLACE, Queens, NY 11101", "borough": "Queens", "lat": 40.7425801, "lon": -73.9415114}, {"name": "MAMAN", "restaurant_group": "Maman", "investor": "TriSpan", "deal_context": "Undisclosed (TriSpan, Dec 2020)", "address": "211 WEST BROADWAY, Manhattan, NY 10013", "borough": "Manhattan", "lat": 40.7188851, "lon": -74.0062682}, {"name": "MAMAN", "restaurant_group": "Maman", "investor": "TriSpan", "deal_context": "Undisclosed (TriSpan, Dec 2020)", "address": "31-00 47 AVENUE, Queens, NY 11101", "borough": "Queens", "lat": 40.7127281, "lon": -74.0060152}, {"name": "MAMAN", "restaurant_group": "Maman", "investor": "TriSpan", "deal_context": "Undisclosed (TriSpan, Dec 2020)", "address": "3 WEST   18 STREET, Manhattan, NY 10011", "borough": "Manhattan", "lat": 40.7389472, "lon": -73.9923405}, {"name": "MAMAN", "restaurant_group": "Maman", "investor": "TriSpan", "deal_context": "Undisclosed (TriSpan, Dec 2020)", "address": "22 WEST   25 STREET, Manhattan, NY 10010", "borough": "Manhattan", "lat": 40.7432297, "lon": -73.990242}, {"name": "MAMAN", "restaurant_group": "Maman", "investor": "TriSpan", "deal_context": "Undisclosed (TriSpan, Dec 2020)", "address": "80 KENT STREET, Brooklyn, NY 11222", "borough": "Brooklyn", "lat": 40.7304598, "lon": -73.9581342}, {"name": "MAMAN", "restaurant_group": "Maman", "investor": "TriSpan", "deal_context": "Undisclosed (TriSpan, Dec 2020)", "address": "239 CENTRE STREET, Manhattan, NY 10013", "borough": "Manhattan", "lat": 40.7202727, "lon": -73.9983769}, {"name": "MAMAN", "restaurant_group": "Maman", "investor": "TriSpan", "deal_context": "Undisclosed (TriSpan, Dec 2020)", "address": "12 WEST   48 STREET, Manhattan, NY 10036", "borough": "Manhattan", "lat": 40.7127281, "lon": -74.0060152}, {"name": "MAMAN", "restaurant_group": "Maman", "investor": "TriSpan", "deal_context": "Undisclosed (TriSpan, Dec 2020)", "address": "71 BROADWAY, Manhattan, NY 10006", "borough": "Manhattan", "lat": 40.7073636, "lon": -74.0121976}, {"name": "MAMAN", "restaurant_group": "Maman", "investor": "TriSpan", "deal_context": "Undisclosed (TriSpan, Dec 2020)", "address": "154 COURT STREET, Brooklyn, NY 11201", "borough": "Brooklyn", "lat": 40.6887571, "lon": -73.9931074}, {"name": "MAMAN", "restaurant_group": "Maman", "investor": "TriSpan", "deal_context": "Undisclosed (TriSpan, Dec 2020)", "address": "429 AMSTERDAM AVENUE, Manhattan, NY 10024", "borough": "Manhattan", "lat": 40.784158, "lon": -73.9773639}, {"name": "MAMAN", "restaurant_group": "Maman", "investor": "TriSpan", "deal_context": "Undisclosed (TriSpan, Dec 2020)", "address": "375 HUDSON STREET, Manhattan, NY 10014", "borough": "Manhattan", "lat": 40.7284863, "lon": -74.0079039}, {"name": "MAMAN", "restaurant_group": "Maman", "investor": "TriSpan", "deal_context": "Undisclosed (TriSpan, Dec 2020)", "address": "230 PARK AVENUE, Manhattan, NY 10169", "borough": "Manhattan", "lat": 40.7543934, "lon": -73.9761028}, {"name": "MAMAN", "restaurant_group": "Maman", "investor": "TriSpan", "deal_context": "Undisclosed (TriSpan, Dec 2020)", "address": "155 EAST   44 STREET, Manhattan, NY 10017", "borough": "Manhattan", "lat": 40.7519308, "lon": -73.9731828}, {"name": "PETITE MAMAN", "restaurant_group": "Maman", "investor": "TriSpan", "deal_context": "Undisclosed (TriSpan, Dec 2020)", "address": "545 MADISON AVENUE, Manhattan, NY 10022", "borough": "Manhattan", "lat": 40.760661, "lon": -73.9729948}, {"name": "MAMAN", "restaurant_group": "Maman", "investor": "TriSpan", "deal_context": "Undisclosed (TriSpan, Dec 2020)", "address": "67 UNIVERSITY PLACE, Manhattan, NY 10003", "borough": "Manhattan", "lat": 40.7328622, "lon": -73.9934031}, {"name": "MAMAN", "restaurant_group": "Maman", "investor": "TriSpan", "deal_context": "Undisclosed (TriSpan, Dec 2020)", "address": "66 WATER STREET, Brooklyn, NY 11201", "borough": "Brooklyn", "lat": 40.7030518, "lon": -73.9913958}, {"name": "PETITE MAMAN", "restaurant_group": "Maman", "investor": "TriSpan", "deal_context": "Undisclosed (TriSpan, Dec 2020)", "address": "210 MURRAY STREET, Manhattan, NY 10282", "borough": "Manhattan", "lat": 40.7152592, "lon": -74.0146089}, {"name": "MAMAN", "restaurant_group": "Maman", "investor": "TriSpan", "deal_context": "Undisclosed (TriSpan, Dec 2020)", "address": "800 WASHINGTON STREET, Manhattan, NY 10014", "borough": "Manhattan", "lat": 40.7321306, "lon": -74.0087468}, {"name": "DOS TOROS", "restaurant_group": "Dos Toros", "investor": "L Catterton (Founders Table)", "deal_context": "Undisclosed (L Catterton, Jan 2020)", "address": "LAGUARDIA AIRPORT, Queens, NY 11371", "borough": "Queens", "lat": 40.7757145, "lon": -73.873364}, {"name": "DOS TOROS", "restaurant_group": "Dos Toros", "investor": "L Catterton (Founders Table)", "deal_context": "Undisclosed (L Catterton, Jan 2020)", "address": "189 BEDFORD AVENUE, Brooklyn, NY 11211", "borough": "Brooklyn", "lat": 40.7175003, "lon": -73.9577817}, {"name": "DOS TOROS", "restaurant_group": "Dos Toros", "investor": "L Catterton (Founders Table)", "deal_context": "Undisclosed (L Catterton, Jan 2020)", "address": "137 4 AVENUE, Manhattan, NY 10003", "borough": "Manhattan", "lat": 40.7354198, "lon": -73.9940435}, {"name": "DOS TOROS", "restaurant_group": "Dos Toros", "investor": "L Catterton (Founders Table)", "deal_context": "Undisclosed (L Catterton, Jan 2020)", "address": "119 WEST   40 STREET, Manhattan, NY 10018", "borough": "Manhattan", "lat": 40.7568439, "lon": -73.9928426}, {"name": "DOS TOROS", "restaurant_group": "Dos Toros", "investor": "L Catterton (Founders Table)", "deal_context": "Undisclosed (L Catterton, Jan 2020)", "address": "200 VESEY STREET, Manhattan, NY 10281", "borough": "Manhattan", "lat": 40.7136414, "lon": -74.0148204}, {"name": "DOS TOROS TAQUERIA", "restaurant_group": "Dos Toros", "investor": "L Catterton (Founders Table)", "deal_context": "Undisclosed (L Catterton, Jan 2020)", "address": "1 BOERUM PLACE, Brooklyn, NY 11201", "borough": "Brooklyn", "lat": 40.6915937, "lon": -73.9887539}, {"name": "DOS TOROS", "restaurant_group": "Dos Toros", "investor": "L Catterton (Founders Table)", "deal_context": "Undisclosed (L Catterton, Jan 2020)", "address": "636 LEXINGTON AVENUE, Manhattan, NY 10022", "borough": "Manhattan", "lat": 40.7591865, "lon": -73.9706375}, {"name": "DOS TOROS", "restaurant_group": "Dos Toros", "investor": "L Catterton (Founders Table)", "deal_context": "Undisclosed (L Catterton, Jan 2020)", "address": "11 CARMINE STREET, Manhattan, NY 10014", "borough": "Manhattan", "lat": 40.7306129, "lon": -74.0022975}, {"name": "DOS TOROS", "restaurant_group": "Dos Toros", "investor": "L Catterton (Founders Table)", "deal_context": "Undisclosed (L Catterton, Jan 2020)", "address": "2911 BROADWAY, Manhattan, NY 10025", "borough": "Manhattan", "lat": 40.8064913, "lon": -73.9653451}, {"name": "DOS TOROS TAQUERIA", "restaurant_group": "Dos Toros", "investor": "L Catterton (Founders Table)", "deal_context": "Undisclosed (L Catterton, Jan 2020)", "address": "1115 LEXINGTON AVENUE, Manhattan, NY 10075", "borough": "Manhattan", "lat": 40.7740693, "lon": -73.9593812}, {"name": "DOS TOROS", "restaurant_group": "Dos Toros", "investor": "L Catterton (Founders Table)", "deal_context": "Undisclosed (L Catterton, Jan 2020)", "address": "101 MAIDEN LANE, Manhattan, NY 10038", "borough": "Manhattan", "lat": 40.7069204, "lon": -74.0067667}, {"name": "DOS TOROS", "restaurant_group": "Dos Toros", "investor": "L Catterton (Founders Table)", "deal_context": "Undisclosed (L Catterton, Jan 2020)", "address": "10 EAST   48 STREET, Manhattan, NY 10017", "borough": "Manhattan", "lat": 40.7568485, "lon": -73.9773791}, {"name": "DOS TOROS/ZOROS (POST SECURITY)", "restaurant_group": "Dos Toros", "investor": "L Catterton (Founders Table)", "deal_context": "Undisclosed (L Catterton, Jan 2020)", "address": "TERMINAL 8, Queens, NY 11430", "borough": "Queens", "lat": 40.647773, "lon": -73.7913602}, {"name": "DOS TOROS", "restaurant_group": "Dos Toros", "investor": "L Catterton (Founders Table)", "deal_context": "Undisclosed (L Catterton, Jan 2020)", "address": "1 STATE STREET, Manhattan, NY 10004", "borough": "Manhattan", "lat": 40.7025304, "lon": -74.0133322}, {"name": "DOS TOROS TAQUERIA", "restaurant_group": "Dos Toros", "investor": "L Catterton (Founders Table)", "deal_context": "Undisclosed (L Catterton, Jan 2020)", "address": "315 7 AVENUE, Manhattan, NY 10001", "borough": "Manhattan", "lat": 40.7461112, "lon": -73.9941836}, {"name": "DOS TOROS TAQUERIA", "restaurant_group": "Dos Toros", "investor": "L Catterton (Founders Table)", "deal_context": "Undisclosed (L Catterton, Jan 2020)", "address": "1327 YORK AVENUE, Manhattan, NY 10021", "borough": "Manhattan", "lat": 40.766089, "lon": -73.9546504}, {"name": "DOS TOROS", "restaurant_group": "Dos Toros", "investor": "L Catterton (Founders Table)", "deal_context": "Undisclosed (L Catterton, Jan 2020)", "address": "1290 AVENUE OF THE AMERICAS, Manhattan, NY 10119", "borough": "Manhattan", "lat": 40.7604688, "lon": -73.9788735}, {"name": "DOS TOROS", "restaurant_group": "Dos Toros", "investor": "L Catterton (Founders Table)", "deal_context": "Undisclosed (L Catterton, Jan 2020)", "address": "1 Central Terminal, Queens, NY", "borough": "Queens", "lat": 40.7731231, "lon": -73.8765698}, {"name": "DOS TOROS TAQUERIA", "restaurant_group": "Dos Toros", "investor": "L Catterton (Founders Table)", "deal_context": "Undisclosed (L Catterton, Jan 2020)", "address": "237 PARK AVENUE, Manhattan, NY 10017", "borough": "Manhattan", "lat": 40.7541571, "lon": -73.9753267}, {"name": "DOS TOROS TAQUERIA", "restaurant_group": "Dos Toros", "investor": "L Catterton (Founders Table)", "deal_context": "Undisclosed (L Catterton, Jan 2020)", "address": "1 PENN PLAZA, Manhattan, NY 10119", "borough": "Manhattan", "lat": 40.7510985, "lon": -73.9919723}, {"name": "ROSA MEXICANO", "restaurant_group": "Rosa Mexicano", "investor": "TriSpan", "deal_context": "Undisclosed (TriSpan, Mar 2018)", "address": "9 EAST   18 STREET, Manhattan, NY 10003", "borough": "Manhattan", "lat": 40.73832, "lon": -73.9911393}, {"name": "ROSA MEXICANO", "restaurant_group": "Rosa Mexicano", "investor": "TriSpan", "deal_context": "Undisclosed (TriSpan, Mar 2018)", "address": "251 EAST   52 STREET, Manhattan, NY 10022", "borough": "Manhattan", "lat": 40.7127281, "lon": -74.0060152}, {"name": "ROSA MEXICANO", "restaurant_group": "Rosa Mexicano", "investor": "TriSpan", "deal_context": "Undisclosed (TriSpan, Mar 2018)", "address": "1889 BROADWAY, Manhattan, NY 10023", "borough": "Manhattan", "lat": 40.771384, "lon": -73.9824717}, {"name": "TACOMBI AT FONDA NOLITA", "restaurant_group": "Tacombi", "investor": "Enlightened Hospitality Investments (EHI)", "deal_context": "$27.5M (EHI, Dec 2021)", "address": "267 ELIZABETH STREET, Manhattan, NY 10012", "borough": "Manhattan", "lat": 40.7239825, "lon": -73.9937554}, {"name": "TACOMBI", "restaurant_group": "Tacombi", "investor": "Enlightened Hospitality Investments (EHI)", "deal_context": "$27.5M (EHI, Dec 2021)", "address": "242 METROPOLITAN AVENUE, Brooklyn, NY 11211", "borough": "Brooklyn", "lat": 40.7147686, "lon": -73.9594484}, {"name": "TACOMBI", "restaurant_group": "Tacombi", "investor": "Enlightened Hospitality Investments (EHI)", "deal_context": "$27.5M (EHI, Dec 2021)", "address": "255 BLEECKER STREET, Manhattan, NY 10014", "borough": "Manhattan", "lat": 40.7310966, "lon": -74.0027945}, {"name": "TACOMBI", "restaurant_group": "Tacombi", "investor": "Enlightened Hospitality Investments (EHI)", "deal_context": "$27.5M (EHI, Dec 2021)", "address": "202 EAST   70 STREET, Manhattan, NY 10021", "borough": "Manhattan", "lat": 40.7127281, "lon": -74.0060152}, {"name": "TACOMBI", "restaurant_group": "Tacombi", "investor": "Enlightened Hospitality Investments (EHI)", "deal_context": "$27.5M (EHI, Dec 2021)", "address": "350 5 AVENUE, Manhattan, NY 10118", "borough": "Manhattan", "lat": 40.7484421, "lon": -73.9856589}, {"name": "TACOMBI", "restaurant_group": "Tacombi", "investor": "Enlightened Hospitality Investments (EHI)", "deal_context": "$27.5M (EHI, Dec 2021)", "address": "71-22 AUSTIN STREET, Queens, NY 11375", "borough": "Queens", "lat": 40.7197838, "lon": -73.8440372}, {"name": "TACOMBI", "restaurant_group": "Tacombi", "investor": "Enlightened Hospitality Investments (EHI)", "deal_context": "$27.5M (EHI, Dec 2021)", "address": "377 AMSTERDAM AVENUE, Manhattan, NY 10024", "borough": "Manhattan", "lat": 40.7825102, "lon": -73.9785637}, {"name": "TACOMBI", "restaurant_group": "Tacombi", "investor": "Enlightened Hospitality Investments (EHI)", "deal_context": "$27.5M (EHI, Dec 2021)", "address": "25 LAFAYETTE AVENUE, Brooklyn, NY 11217", "borough": "Brooklyn", "lat": 40.687101, "lon": -73.9779333}, {"name": "TACOMBI", "restaurant_group": "Tacombi", "investor": "Enlightened Hospitality Investments (EHI)", "deal_context": "$27.5M (EHI, Dec 2021)", "address": "27-10 43 AVENUE, Queens, NY 11101", "borough": "Queens", "lat": 40.7127281, "lon": -74.0060152}, {"name": "TACOMBI", "restaurant_group": "Tacombi", "investor": "Enlightened Hospitality Investments (EHI)", "deal_context": "$27.5M (EHI, Dec 2021)", "address": "30 WEST   24 STREET, Manhattan, NY 10010", "borough": "Manhattan", "lat": 40.742603, "lon": -73.9902705}, {"name": "TACOMBI", "restaurant_group": "Tacombi", "investor": "Enlightened Hospitality Investments (EHI)", "deal_context": "$27.5M (EHI, Dec 2021)", "address": "74 BROAD STREET, Manhattan, NY 10004", "borough": "Manhattan", "lat": 40.7046451, "lon": -74.011833}, {"name": "MILK BAR", "restaurant_group": "Milk Bar", "investor": "RSE Ventures", "deal_context": "Undisclosed (RSE Ventures)", "address": "1186 BROADWAY, Manhattan, NY 10001", "borough": "Manhattan", "lat": 40.7458602, "lon": -73.9884774}, {"name": "MILK BAR", "restaurant_group": "Milk Bar", "investor": "RSE Ventures", "deal_context": "Undisclosed (RSE Ventures)", "address": "204 6 AVENUE, Brooklyn, NY 11217", "borough": "Brooklyn", "lat": 40.6800576, "lon": -73.9813316}, {"name": "MILK BAR", "restaurant_group": "Milk Bar", "investor": "RSE Ventures", "deal_context": "Undisclosed (RSE Ventures)", "address": "561 COLUMBUS AVENUE, Manhattan, NY 10024", "borough": "Manhattan", "lat": 40.7872284, "lon": -73.9714094}, {"name": "MILK BAR NOLITA", "restaurant_group": "Milk Bar", "investor": "RSE Ventures", "deal_context": "Undisclosed (RSE Ventures)", "address": "246 MOTT STREET, Manhattan, NY 10012", "borough": "Manhattan", "lat": 40.723264, "lon": -73.9945681}, {"name": "MILK BAR", "restaurant_group": "Milk Bar", "investor": "RSE Ventures", "deal_context": "Undisclosed (RSE Ventures)", "address": "620 VANDERBILT AVENUE, Brooklyn, NY 11238", "borough": "Brooklyn", "lat": 40.6778844, "lon": -73.9689877}, {"name": "MILK BAR", "restaurant_group": "Milk Bar", "investor": "RSE Ventures", "deal_context": "Undisclosed (RSE Ventures)", "address": "382 METROPOLITAN AVENUE, Brooklyn, NY 11211", "borough": "Brooklyn", "lat": 40.7137738, "lon": -73.955458}, {"name": "MILK BAR", "restaurant_group": "Milk Bar", "investor": "RSE Ventures", "deal_context": "Undisclosed (RSE Ventures)", "address": "74 CHRISTOPHER STREET, Manhattan, NY 10014", "borough": "Manhattan", "lat": 40.7334612, "lon": -74.0033058}, {"name": "BLUESTONE LANE", "restaurant_group": "Bluestone Lane", "investor": "RSE Ventures", "deal_context": "Undisclosed (RSE Ventures)", "address": "CHELSEA PIERS, Manhattan, NY 10011", "borough": "Manhattan", "lat": 40.7466992, "lon": -74.0099792}, {"name": "BLUESTONE LANE", "restaurant_group": "Bluestone Lane", "investor": "RSE Ventures", "deal_context": "Undisclosed (RSE Ventures)", "address": "330 MADISON AVENUE, Manhattan, NY 10017", "borough": "Manhattan", "lat": 40.7530304, "lon": -73.9792984}, {"name": "BLUESTONE LANE", "restaurant_group": "Bluestone Lane", "investor": "RSE Ventures", "deal_context": "Undisclosed (RSE Ventures)", "address": "417 AMSTERDAM AVENUE, Manhattan, NY 10024", "borough": "Manhattan", "lat": 40.7836535, "lon": -73.9777284}, {"name": "BLUESTONE LANE", "restaurant_group": "Bluestone Lane", "investor": "RSE Ventures", "deal_context": "Undisclosed (RSE Ventures)", "address": "1375 BROADWAY, Manhattan, NY 10018", "borough": "Manhattan", "lat": 40.7524714, "lon": -73.9876344}, {"name": "BLUESTONE LANE", "restaurant_group": "Bluestone Lane", "investor": "RSE Ventures", "deal_context": "Undisclosed (RSE Ventures)", "address": "2 EAST   90 STREET, Manhattan, NY 10128", "borough": "Manhattan", "lat": 40.7127281, "lon": -74.0060152}, {"name": "BLUESTONE LANE", "restaurant_group": "Bluestone Lane", "investor": "RSE Ventures", "deal_context": "Undisclosed (RSE Ventures)", "address": "109 WEST BROADWAY, Manhattan, NY 10013", "borough": "Manhattan", "lat": 40.7160631, "lon": -74.0085698}, {"name": "BLUESTONE LANE", "restaurant_group": "Bluestone Lane", "investor": "RSE Ventures", "deal_context": "Undisclosed (RSE Ventures)", "address": "435 WEST   31 STREET, Manhattan, NY 10001", "borough": "Manhattan", "lat": 40.7522669, "lon": -73.9988018}, {"name": "BLUESTONE LANE", "restaurant_group": "Bluestone Lane", "investor": "RSE Ventures", "deal_context": "Undisclosed (RSE Ventures)", "address": "400 MADISON AVENUE, Manhattan, NY 10017", "borough": "Manhattan", "lat": 40.7563578, "lon": -73.976877}, {"name": "BLUESTONE LANE", "restaurant_group": "Bluestone Lane", "investor": "RSE Ventures", "deal_context": "Undisclosed (RSE Ventures)", "address": "11 TIMES SQUARE, Manhattan, NY 10036", "borough": "Manhattan", "lat": 40.7566036, "lon": -73.989657}, {"name": "BLUESTONE LANE", "restaurant_group": "Bluestone Lane", "investor": "RSE Ventures", "deal_context": "Undisclosed (RSE Ventures)", "address": "30 HUDSON YARDS, Manhattan, NY 10001", "borough": "Manhattan", "lat": 40.753983, "lon": -74.0006028}, {"name": "BLUESTONE LANE", "restaurant_group": "Bluestone Lane", "investor": "RSE Ventures", "deal_context": "Undisclosed (RSE Ventures)", "address": "55 HUDSON YARDS, Manhattan, NY 10001", "borough": "Manhattan", "lat": 40.7552063, "lon": -74.0017804}, {"name": "BLUESTONE LANE", "restaurant_group": "Bluestone Lane", "investor": "RSE Ventures", "deal_context": "Undisclosed (RSE Ventures)", "address": "1120 6 AVENUE, Manhattan, NY 10036", "borough": "Manhattan", "lat": 40.7615442, "lon": -73.9814362}, {"name": "BLUESTONE LANE", "restaurant_group": "Bluestone Lane", "investor": "RSE Ventures", "deal_context": "Undisclosed (RSE Ventures)", "address": "2 RIVER TERRACE, Manhattan, NY 10282", "borough": "Manhattan", "lat": 40.7157134, "lon": -74.0158276}, {"name": "BLUESTONE LANE", "restaurant_group": "Bluestone Lane", "investor": "RSE Ventures", "deal_context": "Undisclosed (RSE Ventures)", "address": "55 PROSPECT STREET, Brooklyn, NY 11201", "borough": "Brooklyn", "lat": 40.7008985, "lon": -73.9881944}, {"name": "DIG INN", "restaurant_group": "Dig / Dig Inn", "investor": "Enlightened Hospitality Investments (EHI)", "deal_context": "Undisclosed (EHI)", "address": "80 PINE STREET, Manhattan, NY 10005", "borough": "Manhattan", "lat": 40.7062526, "lon": -74.0067481}, {"name": "DIG INN", "restaurant_group": "Dig / Dig Inn", "investor": "Enlightened Hospitality Investments (EHI)", "deal_context": "Undisclosed (EHI)", "address": "856 8 AVENUE, Manhattan, NY 10019", "borough": "Manhattan", "lat": 40.7640836, "lon": -73.9847966}, {"name": "DIG INN", "restaurant_group": "Dig / Dig Inn", "investor": "Enlightened Hospitality Investments (EHI)", "deal_context": "Undisclosed (EHI)", "address": "1297 LEXINGTON AVENUE, Manhattan, NY 10128", "borough": "Manhattan", "lat": 40.7803991, "lon": -73.9547518}, {"name": "DIG INN", "restaurant_group": "Dig / Dig Inn", "investor": "Enlightened Hospitality Investments (EHI)", "deal_context": "Undisclosed (EHI)", "address": "133 WEST   38 STREET, Manhattan, NY 10018", "borough": "Manhattan", "lat": 40.753067, "lon": -73.9874984}, {"name": "DIG INN", "restaurant_group": "Dig / Dig Inn", "investor": "Enlightened Hospitality Investments (EHI)", "deal_context": "Undisclosed (EHI)", "address": "100 WEST   67 STREET, Manhattan, NY 10023", "borough": "Manhattan", "lat": 40.774277, "lon": -73.9814791}, {"name": "DIG INN ON BLEECKER", "restaurant_group": "Dig / Dig Inn", "investor": "Enlightened Hospitality Investments (EHI)", "deal_context": "Undisclosed (EHI)", "address": "232 BLEECKER STREET, Manhattan, NY 10014", "borough": "Manhattan", "lat": 40.730184, "lon": -74.0025384}, {"name": "DIG INN", "restaurant_group": "Dig / Dig Inn", "investor": "Enlightened Hospitality Investments (EHI)", "deal_context": "Undisclosed (EHI)", "address": "275 7 AVENUE, Manhattan, NY 10001", "borough": "Manhattan", "lat": 40.745467, "lon": -73.9944224}, {"name": "DIG INN", "restaurant_group": "Dig / Dig Inn", "investor": "Enlightened Hospitality Investments (EHI)", "deal_context": "Undisclosed (EHI)", "address": "127 4 AVENUE, Manhattan, NY 10003", "borough": "Manhattan", "lat": 40.7341407, "lon": -73.994996}, {"name": "DIG INN", "restaurant_group": "Dig / Dig Inn", "investor": "Enlightened Hospitality Investments (EHI)", "deal_context": "Undisclosed (EHI)", "address": "630 3 AVENUE, Manhattan, NY 10017", "borough": "Manhattan", "lat": 40.7538008, "lon": -73.9722614}, {"name": "DIG INN", "restaurant_group": "Dig / Dig Inn", "investor": "Enlightened Hospitality Investments (EHI)", "deal_context": "Undisclosed (EHI)", "address": "691 BROADWAY, Manhattan, NY 10012", "borough": "Manhattan", "lat": 40.7281492, "lon": -73.9946724}, {"name": "DIG INN", "restaurant_group": "Dig / Dig Inn", "investor": "Enlightened Hospitality Investments (EHI)", "deal_context": "Undisclosed (EHI)", "address": "286 MADISON AVENUE, Manhattan, NY 10017", "borough": "Manhattan", "lat": 40.7517613, "lon": -73.9803865}, {"name": "DIG INN SEASONAL MARKET", "restaurant_group": "Dig / Dig Inn", "investor": "Enlightened Hospitality Investments (EHI)", "deal_context": "Undisclosed (EHI)", "address": "225 LIBERTY STREET, Manhattan, NY 10280", "borough": "Manhattan", "lat": 40.712272, "lon": -74.0154361}, {"name": "DIG INN", "restaurant_group": "Dig / Dig Inn", "investor": "Enlightened Hospitality Investments (EHI)", "deal_context": "Undisclosed (EHI)", "address": "70 PRINCE STREET, Manhattan, NY 10012", "borough": "Manhattan", "lat": 40.7237755, "lon": -73.9969179}, {"name": "DIG INN", "restaurant_group": "Dig / Dig Inn", "investor": "Enlightened Hospitality Investments (EHI)", "deal_context": "Undisclosed (EHI)", "address": "166 NORTH    4 STREET, Brooklyn, NY 11211", "borough": "Brooklyn", "lat": 40.7127281, "lon": -74.0060152}, {"name": "DIG INN SEASONAL MARKET", "restaurant_group": "Dig / Dig Inn", "investor": "Enlightened Hospitality Investments (EHI)", "deal_context": "Undisclosed (EHI)", "address": "2884 BROADWAY, Manhattan, NY 10025", "borough": "Manhattan", "lat": 40.8055514, "lon": -73.9653417}, {"name": "DIG INN", "restaurant_group": "Dig / Dig Inn", "investor": "Enlightened Hospitality Investments (EHI)", "deal_context": "Undisclosed (EHI)", "address": "16 EAST   23 STREET, Manhattan, NY 10010", "borough": "Manhattan", "lat": 40.7407106, "lon": -73.9883044}, {"name": "DIG INN", "restaurant_group": "Dig / Dig Inn", "investor": "Enlightened Hospitality Investments (EHI)", "deal_context": "Undisclosed (EHI)", "address": "1319 1 AVENUE, Manhattan, NY 10021", "borough": "Manhattan", "lat": 40.7680652, "lon": -73.9558083}, {"name": "DIG INN", "restaurant_group": "Dig / Dig Inn", "investor": "Enlightened Hospitality Investments (EHI)", "deal_context": "Undisclosed (EHI)", "address": "138 WILLOUGHBY STREET, Brooklyn, NY 11201", "borough": "Brooklyn", "lat": 40.6919106, "lon": -73.9832147}, {"name": "DIG INN SEASONAL MARKET", "restaurant_group": "Dig / Dig Inn", "investor": "Enlightened Hospitality Investments (EHI)", "deal_context": "Undisclosed (EHI)", "address": "150 EAST   52 STREET, Manhattan, NY 10022", "borough": "Manhattan", "lat": 40.7572301, "lon": -73.9707427}, {"name": "DIG INN", "restaurant_group": "Dig / Dig Inn", "investor": "Enlightened Hospitality Investments (EHI)", "deal_context": "Undisclosed (EHI)", "address": "709 LEXINGTON AVENUE, Manhattan, NY 10022", "borough": "Manhattan", "lat": 40.7611212, "lon": -73.9687022}, {"name": "JOE & THE JUICE", "restaurant_group": "Joe & the Juice", "investor": "General Atlantic", "deal_context": "$641M (General Atlantic, Nov 2023)", "address": "1350 AVENUE OF THE AMERICAS, Manhattan, NY 10019", "borough": "Manhattan", "lat": 40.7627635, "lon": -73.9779699}, {"name": "JOE & THE JUICE", "restaurant_group": "Joe & the Juice", "investor": "General Atlantic", "deal_context": "$641M (General Atlantic, Nov 2023)", "address": "343 AMSTERDAM AVENUE, Manhattan, NY 10024", "borough": "Manhattan", "lat": 40.7813177, "lon": -73.9794359}, {"name": "JOE & THE JUICE", "restaurant_group": "Joe & the Juice", "investor": "General Atlantic", "deal_context": "$641M (General Atlantic, Nov 2023)", "address": "247 COLUMBUS AVENUE, Manhattan, NY 10023", "borough": "Manhattan", "lat": 40.7769294, "lon": -73.9789155}, {"name": "JOE & THE JUICE BROAD ST", "restaurant_group": "Joe & the Juice", "investor": "General Atlantic", "deal_context": "$641M (General Atlantic, Nov 2023)", "address": "40 BROAD STREET, Manhattan, NY 10004", "borough": "Manhattan", "lat": 40.7059374, "lon": -74.011542}, {"name": "JOE & THE JUICE", "restaurant_group": "Joe & the Juice", "investor": "General Atlantic", "deal_context": "$641M (General Atlantic, Nov 2023)", "address": "549 HUDSON STREET, Manhattan, NY 10014", "borough": "Manhattan", "lat": 40.7350131, "lon": -74.0062673}, {"name": "JOE & THE JUICE", "restaurant_group": "Joe & the Juice", "investor": "General Atlantic", "deal_context": "$641M (General Atlantic, Nov 2023)", "address": "2460 BROADWAY, Manhattan, NY 10025", "borough": "Manhattan", "lat": 40.7915836, "lon": -73.9736788}, {"name": "JOE & THE JUICE", "restaurant_group": "Joe & the Juice", "investor": "General Atlantic", "deal_context": "$641M (General Atlantic, Nov 2023)", "address": "993 LEXINGTON AVENUE, Manhattan, NY 10021", "borough": "Manhattan", "lat": 40.7701218, "lon": -73.9622539}, {"name": "JOE & THE JUICE", "restaurant_group": "Joe & the Juice", "investor": "General Atlantic", "deal_context": "$641M (General Atlantic, Nov 2023)", "address": "666 3 AVENUE, Manhattan, NY 10017", "borough": "Manhattan", "lat": 40.7538008, "lon": -73.9722614}, {"name": "JOE & THE JUICE", "restaurant_group": "Joe & the Juice", "investor": "General Atlantic", "deal_context": "$641M (General Atlantic, Nov 2023)", "address": "1114 AVENUE OF THE AMERICAS, Manhattan, NY 10036", "borough": "Manhattan", "lat": 40.7546914, "lon": -73.9826746}, {"name": "JOE & THE JUICE", "restaurant_group": "Joe & the Juice", "investor": "General Atlantic", "deal_context": "$641M (General Atlantic, Nov 2023)", "address": "1400 MADISON AVENUE, Manhattan, NY 10029", "borough": "Manhattan", "lat": 40.7880872, "lon": -73.953726}, {"name": "JOE & THE JUICE", "restaurant_group": "Joe & the Juice", "investor": "General Atlantic", "deal_context": "$641M (General Atlantic, Nov 2023)", "address": "116 UNIVERSITY PLACE, Manhattan, NY 10003", "borough": "Manhattan", "lat": 40.7346037, "lon": -73.9926871}, {"name": "JOE & THE JUICE", "restaurant_group": "Joe & the Juice", "investor": "General Atlantic", "deal_context": "$641M (General Atlantic, Nov 2023)", "address": "161 PRINCE STREET, Manhattan, NY 10012", "borough": "Manhattan", "lat": 40.7261667, "lon": -74.0011917}, {"name": "JOE & THE JUICE GREENWICH ST", "restaurant_group": "Joe & the Juice", "investor": "General Atlantic", "deal_context": "$641M (General Atlantic, Nov 2023)", "address": "295 GREENWICH STREET, Manhattan, NY 10007", "borough": "Manhattan", "lat": 40.7159769, "lon": -74.0108361}, {"name": "JOE & THE JUICE", "restaurant_group": "Joe & the Juice", "investor": "General Atlantic", "deal_context": "$641M (General Atlantic, Nov 2023)", "address": "430 PARK AVENUE, Manhattan, NY 10022", "borough": "Manhattan", "lat": 40.7611695, "lon": -73.9722581}, {"name": "JOE & THE JUICE", "restaurant_group": "Joe & the Juice", "investor": "General Atlantic", "deal_context": "$641M (General Atlantic, Nov 2023)", "address": "1758 BROADWAY, Manhattan, NY 10019", "borough": "Manhattan", "lat": 40.7658728, "lon": -73.9817222}, {"name": "JOE & THE JUICE", "restaurant_group": "Joe & the Juice", "investor": "General Atlantic", "deal_context": "$641M (General Atlantic, Nov 2023)", "address": "929 BROADWAY, Manhattan, NY 10010", "borough": "Manhattan", "lat": 40.7402571, "lon": -73.989675}, {"name": "JOE & THE JUICE", "restaurant_group": "Joe & the Juice", "investor": "General Atlantic", "deal_context": "$641M (General Atlantic, Nov 2023)", "address": "67 SPRING STREET, Manhattan, NY 10012", "borough": "Manhattan", "lat": 40.7226503, "lon": -73.9973474}, {"name": "JOE & THE JUICE", "restaurant_group": "Joe & the Juice", "investor": "General Atlantic", "deal_context": "$641M (General Atlantic, Nov 2023)", "address": "67 WALL STREET, Manhattan, NY 10005", "borough": "Manhattan", "lat": 40.7055759, "lon": -74.0083673}, {"name": "JOE & THE JUICE", "restaurant_group": "Joe & the Juice", "investor": "General Atlantic", "deal_context": "$641M (General Atlantic, Nov 2023)", "address": "801 LEXINGTON AVENUE, Manhattan, NY 10065", "borough": "Manhattan", "lat": 40.7639508, "lon": -73.9667372}, {"name": "JOE & THE JUICE", "restaurant_group": "Joe & the Juice", "investor": "General Atlantic", "deal_context": "$641M (General Atlantic, Nov 2023)", "address": "357 LAFAYETTE STREET, Manhattan, NY 10012", "borough": "Manhattan", "lat": 40.7263335, "lon": -73.9941429}, {"name": "JOE & THE JUICE", "restaurant_group": "Joe & the Juice", "investor": "General Atlantic", "deal_context": "$641M (General Atlantic, Nov 2023)", "address": "1320 3 AVENUE, Manhattan, NY 10021", "borough": "Manhattan", "lat": 40.7747234, "lon": -73.9653761}, {"name": "JOE & THE JUICE", "restaurant_group": "Joe & the Juice", "investor": "General Atlantic", "deal_context": "$641M (General Atlantic, Nov 2023)", "address": "1166 LEXINGTON AVENUE, Manhattan, NY 10028", "borough": "Manhattan", "lat": 40.7759116, "lon": -73.9583791}, {"name": "JOE & THE JUICE", "restaurant_group": "Joe & the Juice", "investor": "General Atlantic", "deal_context": "$641M (General Atlantic, Nov 2023)", "address": "304 BLEECKER STREET, Manhattan, NY 10014", "borough": "Manhattan", "lat": 40.7325014, "lon": -74.0040058}, {"name": "JOE & THE JUICE", "restaurant_group": "Joe & the Juice", "investor": "General Atlantic", "deal_context": "$641M (General Atlantic, Nov 2023)", "address": "1165 BROADWAY, Manhattan, NY 10001", "borough": "Manhattan", "lat": 40.7448287, "lon": -73.9890064}, {"name": "JOE & THE JUICE", "restaurant_group": "Joe & the Juice", "investor": "General Atlantic", "deal_context": "$641M (General Atlantic, Nov 2023)", "address": "300 PARK AVENUE, Manhattan, NY 10022", "borough": "Manhattan", "lat": 40.7570541, "lon": -73.9747565}, {"name": "JOE & THE JUICE (OCULUS WESTFIELD)", "restaurant_group": "Joe & the Juice", "investor": "General Atlantic", "deal_context": "$641M (General Atlantic, Nov 2023)", "address": "185 GREENWICH STREET, Manhattan, NY 10007", "borough": "Manhattan", "lat": 40.7115549, "lon": -74.0114199}, {"name": "JOE & THE JUICE", "restaurant_group": "Joe & the Juice", "investor": "General Atlantic", "deal_context": "$641M (General Atlantic, Nov 2023)", "address": "1185 6 AVENUE, Manhattan, NY 10036", "borough": "Manhattan", "lat": 40.7615442, "lon": -73.9814362}, {"name": "JOE & THE JUICE", "restaurant_group": "Joe & the Juice", "investor": "General Atlantic", "deal_context": "$641M (General Atlantic, Nov 2023)", "address": "20 HUDSON YARDS, Manhattan, NY 10001", "borough": "Manhattan", "lat": 40.7559064, "lon": -74.0005322}, {"name": "JOE & THE JUICE", "restaurant_group": "Joe & the Juice", "investor": "General Atlantic", "deal_context": "$641M (General Atlantic, Nov 2023)", "address": "114 10 AVENUE, Manhattan, NY 10011", "borough": "Manhattan", "lat": 40.7377025, "lon": -73.9965885}, {"name": "JOE & THE JUICE", "restaurant_group": "Joe & the Juice", "investor": "General Atlantic", "deal_context": "$641M (General Atlantic, Nov 2023)", "address": "296 WYTHE AVENUE, Brooklyn, NY 11249", "borough": "Brooklyn", "lat": 40.716292, "lon": -73.964037}, {"name": "JOE & THE JUICE", "restaurant_group": "Joe & the Juice", "investor": "General Atlantic", "deal_context": "$641M (General Atlantic, Nov 2023)", "address": "315 HUDSON STREET, Manhattan, NY 10013", "borough": "Manhattan", "lat": 40.7263874, "lon": -74.0076352}, {"name": "JOE & THE JUICE", "restaurant_group": "Joe & the Juice", "investor": "General Atlantic", "deal_context": "$641M (General Atlantic, Nov 2023)", "address": "322 7 AVENUE, Manhattan, NY 10001", "borough": "Manhattan", "lat": 40.7457002, "lon": -73.9944806}, {"name": "MOMOFUKU", "restaurant_group": "Momofuku", "investor": "RSE Ventures", "deal_context": "Undisclosed (RSE Ventures)", "address": ", 0, NY", "borough": "0", "lat": 40.7209345, "lon": -73.727335}, {"name": "MOMOFUKU NOODLE BAR", "restaurant_group": "Momofuku", "investor": "RSE Ventures", "deal_context": "Undisclosed (RSE Ventures)", "address": "10 COLUMBUS CIRCLE, Manhattan, NY 10019", "borough": "Manhattan", "lat": 40.7682549, "lon": -73.9828519}, {"name": "MOMOFUKU NOODLE BAR", "restaurant_group": "Momofuku", "investor": "RSE Ventures", "deal_context": "Undisclosed (RSE Ventures)", "address": "171 1 AVENUE, Manhattan, NY 10003", "borough": "Manhattan", "lat": 40.7292372, "lon": -73.9845016}, {"name": "MOMOFUKU SSAM BAR", "restaurant_group": "Momofuku", "investor": "RSE Ventures", "deal_context": "Undisclosed (RSE Ventures)", "address": "95 SOUTH STREET, Manhattan, NY 10038", "borough": "Manhattan", "lat": 40.7055221, "lon": -74.0015738}, {"name": "NAYA 1177 6TH AVENUE LLC", "restaurant_group": "Naya", "investor": "TriSpan", "deal_context": "Undisclosed (TriSpan, Oct 2020)", "address": "1177 AVENUE OF THE AMERICAS, Manhattan, NY 10036", "borough": "Manhattan", "lat": 40.7573123, "lon": -73.9827582}, {"name": "NAYA", "restaurant_group": "Naya", "investor": "TriSpan", "deal_context": "Undisclosed (TriSpan, Oct 2020)", "address": "688 3 AVENUE, Manhattan, NY 10017", "borough": "Manhattan", "lat": 40.7538008, "lon": -73.9722614}, {"name": "NAYA", "restaurant_group": "Naya", "investor": "TriSpan", "deal_context": "Undisclosed (TriSpan, Oct 2020)", "address": "304 PARK AVENUE SOUTH, Manhattan, NY 10010", "borough": "Manhattan", "lat": 40.7401486, "lon": -73.986976}, {"name": "NAYA", "restaurant_group": "Naya", "investor": "TriSpan", "deal_context": "Undisclosed (TriSpan, Oct 2020)", "address": "1400 BROADWAY, Manhattan, NY 10018", "borough": "Manhattan", "lat": 40.7529581, "lon": -73.9867553}, {"name": "NAYA", "restaurant_group": "Naya", "investor": "TriSpan", "deal_context": "Undisclosed (TriSpan, Oct 2020)", "address": "20 HUDSON YARDS, Manhattan, NY 10001", "borough": "Manhattan", "lat": 40.7559064, "lon": -74.0005322}, {"name": "NAYA", "restaurant_group": "Naya", "investor": "TriSpan", "deal_context": "Undisclosed (TriSpan, Oct 2020)", "address": "225 LIBERTY STREET, Manhattan, NY 10280", "borough": "Manhattan", "lat": 40.712272, "lon": -74.0154361}, {"name": "NAYA", "restaurant_group": "Naya", "investor": "TriSpan", "deal_context": "Undisclosed (TriSpan, Oct 2020)", "address": "1129 BROADWAY, Manhattan, NY 10010", "borough": "Manhattan", "lat": 40.7435113, "lon": -73.9893164}, {"name": "NAYA", "restaurant_group": "Naya", "investor": "TriSpan", "deal_context": "Undisclosed (TriSpan, Oct 2020)", "address": "285 MADISON AVENUE, Manhattan, NY 10017", "borough": "Manhattan", "lat": 40.751636, "lon": -73.9799764}, {"name": "NAYA", "restaurant_group": "Naya", "investor": "TriSpan", "deal_context": "Undisclosed (TriSpan, Oct 2020)", "address": "41 EAST   11 STREET, Manhattan, NY 10003", "borough": "Manhattan", "lat": 40.7332657, "lon": -73.9929743}, {"name": "NAYA", "restaurant_group": "Naya", "investor": "TriSpan", "deal_context": "Undisclosed (TriSpan, Oct 2020)", "address": "351 WEST   31 STREET, Manhattan, NY 10001", "borough": "Manhattan", "lat": 40.7516531, "lon": -73.9980645}, {"name": "NAYA", "restaurant_group": "Naya", "investor": "TriSpan", "deal_context": "Undisclosed (TriSpan, Oct 2020)", "address": "1314 YORK AVENUE, Manhattan, NY 10021", "borough": "Manhattan", "lat": 40.7656534, "lon": -73.9544975}, {"name": "NAYA", "restaurant_group": "Naya", "investor": "TriSpan", "deal_context": "Undisclosed (TriSpan, Oct 2020)", "address": "54 WEST   56 STREET, Manhattan, NY 10019", "borough": "Manhattan", "lat": 40.7631551, "lon": -73.9770003}, {"name": "NAYA EXPRESS", "restaurant_group": "Naya", "investor": "TriSpan", "deal_context": "Undisclosed (TriSpan, Oct 2020)", "address": "1 NEW YORK PLAZA, Manhattan, NY 10004", "borough": "Manhattan", "lat": 40.7021931, "lon": -74.0120405}, {"name": "NAYA", "restaurant_group": "Naya", "investor": "TriSpan", "deal_context": "Undisclosed (TriSpan, Oct 2020)", "address": "2339 BROADWAY, Manhattan, NY 10024", "borough": "Manhattan", "lat": 40.7876752, "lon": -73.9774262}, {"name": "NAYA", "restaurant_group": "Naya", "investor": "TriSpan", "deal_context": "Undisclosed (TriSpan, Oct 2020)", "address": "750 COLUMBUS AVENUE, Manhattan, NY 10025", "borough": "Manhattan", "lat": 40.7934598, "lon": -73.9673521}, {"name": "NAYA", "restaurant_group": "Naya", "investor": "TriSpan", "deal_context": "Undisclosed (TriSpan, Oct 2020)", "address": "488 MADISON AVENUE, Manhattan, NY 10022", "borough": "Manhattan", "lat": 40.7589073, "lon": -73.9752794}, {"name": "NAYA", "restaurant_group": "Naya", "investor": "TriSpan", "deal_context": "Undisclosed (TriSpan, Oct 2020)", "address": "15 METROTECH CENTER, Brooklyn, NY 11201", "borough": "Brooklyn", "lat": 40.6945735, "lon": -73.9845998}, {"name": "NAYA", "restaurant_group": "Naya", "investor": "TriSpan", "deal_context": "Undisclosed (TriSpan, Oct 2020)", "address": "250 WEST   55 STREET, Manhattan, NY 10019", "borough": "Manhattan", "lat": 40.7649395, "lon": -73.9829195}, {"name": "NAYA", "restaurant_group": "Naya", "investor": "TriSpan", "deal_context": "Undisclosed (TriSpan, Oct 2020)", "address": "10 WEST   33 STREET, Manhattan, NY 10001", "borough": "Manhattan", "lat": 40.7479614, "lon": -73.9857859}, {"name": "NAYA", "restaurant_group": "Naya", "investor": "TriSpan", "deal_context": "Undisclosed (TriSpan, Oct 2020)", "address": "1285 6 AVENUE, Manhattan, NY 10019", "borough": "Manhattan", "lat": 40.7617924, "lon": -73.9812536}, {"name": "NAYA", "restaurant_group": "Naya", "investor": "TriSpan", "deal_context": "Undisclosed (TriSpan, Oct 2020)", "address": "203 BEDFORD AVENUE, Brooklyn, NY 11211", "borough": "Brooklyn", "lat": 40.7169335, "lon": -73.9584443}, {"name": "NAYA", "restaurant_group": "Naya", "investor": "TriSpan", "deal_context": "Undisclosed (TriSpan, Oct 2020)", "address": "30 ROCKEFELLER PLAZA, Manhattan, NY 10112", "borough": "Manhattan", "lat": 40.7591232, "lon": -73.979556}, {"name": "NAYA", "restaurant_group": "Naya", "investor": "TriSpan", "deal_context": "Undisclosed (TriSpan, Oct 2020)", "address": "95 JAY STREET, Brooklyn, NY 11201", "borough": "Brooklyn", "lat": 40.7025812, "lon": -73.9865716}, {"name": "NAYA", "restaurant_group": "Naya", "investor": "TriSpan", "deal_context": "Undisclosed (TriSpan, Oct 2020)", "address": "75 WALL STREET, Manhattan, NY 10005", "borough": "Manhattan", "lat": 40.7051407, "lon": -74.0079783}, {"name": "NAYA 827 THIRD AVENUE LLC", "restaurant_group": "Naya", "investor": "TriSpan", "deal_context": "Undisclosed (TriSpan, Oct 2020)", "address": "827 3 AVENUE, Manhattan, NY 10022", "borough": "Manhattan", "lat": 40.757709, "lon": -73.9694057}, {"name": "NAYA BRYANT PARK LLC", "restaurant_group": "Naya", "investor": "TriSpan", "deal_context": "Undisclosed (TriSpan, Oct 2020)", "address": "500 5 AVENUE, Manhattan, NY 10110", "borough": "Manhattan", "lat": 40.7538222, "lon": -73.9806346}, {"name": "NAYA", "restaurant_group": "Naya", "investor": "TriSpan", "deal_context": "Undisclosed (TriSpan, Oct 2020)", "address": "26-04 JACKSON AVENUE, Queens, NY 11101", "borough": "Queens", "lat": 40.7478865, "lon": -73.9404366}, {"name": "NAYA", "restaurant_group": "Naya", "investor": "TriSpan", "deal_context": "Undisclosed (TriSpan, Oct 2020)", "address": "370 7 AVENUE, Manhattan, NY 10001", "borough": "Manhattan", "lat": 40.7464114, "lon": -73.993964}, {"name": "NAYA", "restaurant_group": "Naya", "investor": "TriSpan", "deal_context": "Undisclosed (TriSpan, Oct 2020)", "address": "300 PARK AVENUE, Manhattan, NY 10022", "borough": "Manhattan", "lat": 40.7570541, "lon": -73.9747565}, {"name": "CHOPT CREATIVE SALAD CO.", "restaurant_group": "Chopt", "investor": "L Catterton (Founders Table)", "deal_context": "Undisclosed (L Catterton, Jan 2020)", "address": "410 10 AVENUE, Manhattan, NY 10001", "borough": "Manhattan", "lat": 40.744502, "lon": -73.9916393}, {"name": "CHOPT", "restaurant_group": "Chopt", "investor": "L Catterton (Founders Table)", "deal_context": "Undisclosed (L Catterton, Jan 2020)", "address": "383 WEST   31 STREET, Manhattan, NY 10001", "borough": "Manhattan", "lat": 40.7516531, "lon": -73.9980645}, {"name": "CHOPT", "restaurant_group": "Chopt", "investor": "L Catterton (Founders Table)", "deal_context": "Undisclosed (L Catterton, Jan 2020)", "address": "875 3 AVENUE, Manhattan, NY 10022", "borough": "Manhattan", "lat": 40.7599379, "lon": -73.9678193}, {"name": "BEAUTY & ESSEX", "restaurant_group": "Tao Group (Tao/Lavo/Marquee/Cathedrale/Beauty & Essex)", "investor": "Mohari Hospitality", "deal_context": "See investor", "address": "146 ESSEX STREET, Manhattan, NY 10002", "borough": "Manhattan", "lat": 40.7204577, "lon": -73.9870469}, {"name": "TAO UPTOWN", "restaurant_group": "Tao Group (Tao/Lavo/Marquee/Cathedrale/Beauty & Essex)", "investor": "Mohari Hospitality", "deal_context": "See investor", "address": "42 EAST   58 STREET, Manhattan, NY 10022", "borough": "Manhattan", "lat": 40.7625481, "lon": -73.9714854}, {"name": "LAVO NEW YORK", "restaurant_group": "Tao Group (Tao/Lavo/Marquee/Cathedrale/Beauty & Essex)", "investor": "Mohari Hospitality", "deal_context": "See investor", "address": "39 EAST   58 STREET, Manhattan, NY 10022", "borough": "Manhattan", "lat": 40.7627604, "lon": -73.9711598}, {"name": "TAO DOWNTOWN", "restaurant_group": "Tao Group (Tao/Lavo/Marquee/Cathedrale/Beauty & Essex)", "investor": "Mohari Hospitality", "deal_context": "See investor", "address": "92 9 AVENUE, Manhattan, NY 10011", "borough": "Manhattan", "lat": 40.7385108, "lon": -73.9960003}, {"name": "MARQUEE", "restaurant_group": "Tao Group (Tao/Lavo/Marquee/Cathedrale/Beauty & Essex)", "investor": "Mohari Hospitality", "deal_context": "See investor", "address": "289 10 AVENUE, Manhattan, NY 10001", "borough": "Manhattan", "lat": 40.7453268, "lon": -73.9910375}, {"name": "CATHEDRALE / THE READY CANTINA / ALPHABET", "restaurant_group": "Tao Group (Tao/Lavo/Marquee/Cathedrale/Beauty & Essex)", "investor": "Mohari Hospitality", "deal_context": "See investor", "address": "112 EAST   11 STREET, Manhattan, NY 10003", "borough": "Manhattan", "lat": 40.731407, "lon": -73.9894371}, {"name": "FUKU - FA6090", "restaurant_group": "Fuku (Momofuku fast casual)", "investor": "RSE Ventures", "deal_context": "See investor", "address": "4 PENN PLAZA, Manhattan, NY 10121", "borough": "Manhattan", "lat": 40.7504503, "lon": -73.9928124}, {"name": "FUKU", "restaurant_group": "Fuku (Momofuku fast casual)", "investor": "RSE Ventures", "deal_context": "See investor", "address": "20 HUDSON YARDS, Manhattan, NY 10001", "borough": "Manhattan", "lat": 40.7559064, "lon": -74.0005322}, {"name": "FUKU", "restaurant_group": "Fuku (Momofuku fast casual)", "investor": "RSE Ventures", "deal_context": "See investor", "address": "620 ATLANTIC AVENUE, Brooklyn, NY 11217", "borough": "Brooklyn", "lat": 40.6838632, "lon": -73.9771836}, {"name": "SWEET CHICK", "restaurant_group": "Sweet Chick (indirect via Founders Table)", "investor": "L Catterton (indirect)", "deal_context": "See investor", "address": "164 BEDFORD AVENUE, Brooklyn, NY 11249", "borough": "Brooklyn", "lat": 40.7183542, "lon": -73.9573197}, {"name": "SWEET CHICK", "restaurant_group": "Sweet Chick (indirect via Founders Table)", "investor": "L Catterton (indirect)", "deal_context": "See investor", "address": "32 EAST   16 STREET, Manhattan, NY 10003", "borough": "Manhattan", "lat": 40.7366142, "lon": -73.9912191}, {"name": "SWEET CHICK", "restaurant_group": "Sweet Chick (indirect via Founders Table)", "investor": "L Catterton (indirect)", "deal_context": "See investor", "address": "178 LUDLOW STREET, Manhattan, NY 10002", "borough": "Manhattan", "lat": 40.7217365, "lon": -73.987391}, {"name": "SWEET CHICK", "restaurant_group": "Sweet Chick (indirect via Founders Table)", "investor": "L Catterton (indirect)", "deal_context": "See investor", "address": "46-42 VERNON BOULEVARD, Queens, NY 11101", "borough": "Queens", "lat": 40.7457945, "lon": -73.9533819}, {"name": "SWEET CHICK", "restaurant_group": "Sweet Chick (indirect via Founders Table)", "investor": "L Catterton (indirect)", "deal_context": "See investor", "address": "636 CARLTON AVENUE, Brooklyn, NY 11238", "borough": "Brooklyn", "lat": 40.677678, "lon": -73.9724083}];
+
+LOCATIONS.forEach(row => {
+  const color = COLORS[row.investor] || "#888";
+  L.circleMarker([row.lat, row.lon], {
+    radius: 6,
+    fillColor: color,
+    color: '#fff',
+    weight: 1,
+    fillOpacity: 0.85,
+  }).bindPopup(`
+    <strong>${row.name}</strong><br>
+    ${row.restaurant_group}<br>
+    <em style="color:#666">${row.investor}</em><br>
+    <small>${row.deal_context}</small>
+  `).addTo(map);
+});
+</script>
+</body>
+</html>
